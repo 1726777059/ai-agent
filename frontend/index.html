@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>AI 学习助手</title>
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--text:#1a1a2e;--sub:#6b7280;--blue:#4a90d9;--green:#27ae60;--red:#e74c3c;--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+/* ── 入口弹窗 ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:100;padding:16px}
+.modal{background:#fff;border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:480px;padding:28px 20px 20px;animation:slideUp .25s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h2{font-size:22px;text-align:center;margin-bottom:20px}
+.mode-card{display:block;width:100%;padding:16px;margin:10px 0;border:1.5px solid #e5e7eb;border-radius:12px;background:#fff;text-align:left;cursor:pointer;transition:all .15s}
+.mode-card:hover,.mode-card:active{border-color:var(--blue);background:#f0f6ff}
+.mode-card .icon{font-size:24px;margin-right:8px;vertical-align:middle}
+.mode-card .title{font-size:16px;font-weight:700;display:inline;vertical-align:middle}
+.mode-card .desc{font-size:13px;color:var(--sub);margin-top:6px}
+.mode-card .meta{font-size:12px;color:var(--blue);margin-top:4px}
+.mode-card.custom{border-style:dashed}
+/* ── 闪卡 ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10}
+header .back{font-size:20px;cursor:pointer;padding:4px}
+header .title{font-weight:700;font-size:16px}
+header .badge{font-size:12px;background:var(--blue);color:#fff;padding:4px 10px;border-radius:20px}
+.flashcard-container{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 16px;min-height:60vh;touch-action:pan-y}
+.flashcard{background:var(--card);border-radius:var(--radius);padding:28px 24px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.08);min-height:320px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .2s}
+.flashcard .fc-title{font-size:20px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.flashcard .fc-content{font-size:15px;line-height:1.8;flex:1;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.flashcard .fc-meta{font-size:12px;color:var(--sub);margin-top:16px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between}
+.flashcard .fc-mastery{font-weight:700}
+.fc-actions{display:flex;gap:12px;padding:16px 24px 24px}
+.btn{flex:1;padding:16px;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-mastered{background:#eafaf1;color:var(--green);border:2px solid #a3d9b1}
+.btn-mastered:active{background:#a3d9b1}
+.btn-skip{background:#fdedec;color:var(--red);border:2px solid #f5b7b1}
+.btn-skip:active{background:#f5b7b1}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:active{background:#357abd}
+.flashcard-done{text-align:center;padding:48px 24px}
+.flashcard-done h2{font-size:28px;margin-bottom:12px}
+.flashcard-done p{color:var(--sub);margin-bottom:24px}
+.empty-state{text-align:center;padding:60px 24px;color:var(--sub)}
+/* ── 测验 ── */
+.quiz-container{padding:20px}
+.quiz-q{margin-bottom:20px}
+.quiz-q .q-header{font-size:15px;font-weight:700;margin-bottom:12px}
+.quiz-q .opt{display:block;padding:14px;margin:8px 0;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;transition:all .15s}
+.quiz-q .opt.selected{border-color:var(--blue);background:#e8f0fe}
+.quiz-q .opt input{display:none}
+.progress-bar{height:4px;background:#e5e7eb;border-radius:2px;margin:16px 0}
+.progress-bar .fill{height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
+/* ── 统计 ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.stat-card{background:#fff;border-radius:var(--radius);padding:20px;text-align:center}
+.stat-card .num{font-size:32px;font-weight:800}
+.stat-card .lbl{font-size:12px;color:var(--sub);margin-top:4px}
+.weak-list{background:#fff;border-radius:var(--radius);padding:16px;margin:0 16px}
+.weak-list h3{margin-bottom:12px}
+.weak-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.weak-item .bar{width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;align-self:center}
+.weak-item .bar-fill{height:100%;border-radius:4px}
+/* ── Tabs ── */
+.tabs{display:flex;background:#fff;border-bottom:1px solid #eee}
+.tab{flex:1;text-align:center;padding:14px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{border-bottom-color:var(--blue);color:var(--blue)}
+/* ── 通用 ── */
+.hidden{display:none!important}
+.section{display:none}
+.section.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- ═══ 入口弹窗 ═══ -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal" id="modal">
+<h2>🎯 今天学什么？</h2>
+<div id="modeCards"></div>
+</div>
+</div>
+
+<!-- ═══ 主界面 ═══ -->
+<div id="mainApp" class="hidden">
+  <!-- Tabs -->
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="flashcard">📇 闪卡</div>
+    <div class="tab" data-tab="quiz">📝 测验</div>
+    <div class="tab" data-tab="stats">📊 统计</div>
+  </div>
+
+  <!-- 闪卡区 -->
+  <div class="section active" id="flashcardSection">
+    <header><span class="back" onclick="openModal()">←</span><span class="title" id="fcTitle">闪卡复习</span><span class="badge" id="fcBadge"></span></header>
+    <div class="flashcard-container" id="flashcardContainer"></div>
+    <div class="fc-actions" id="fcActions"></div>
+  </div>
+
+  <!-- 测验区 -->
+  <div class="section" id="quizSection">
+    <header><span class="back" onclick="openModal()">←</span><span class="title">📝 测验</span><span class="badge" id="qzBadge"></span></header>
+    <div class="quiz-container" id="quizContainer"></div>
+    <div style="padding:0 20px 20px"><button class="btn btn-primary" id="btnSubmit" onclick="submitQuiz()">提交答案给 Claude 批改</button></div>
+  </div>
+
+  <!-- 统计区 -->
+  <div class="section" id="statsSection">
+    <header><span class="title">📊 学习统计</span></header>
+    <div id="statsContent"></div>
+  </div>
+</div>
+
+<script>
+// ═══ 配置 ═══
+const API = "http://localhost:8000"; // 本地调试，部署后改 Render URL
+let currentMode = null;
+let knowledgePoints = [];
+let flashcards = [];
+let fcIndex = 0;
+let quizQuestions = [];
+let quizAnswers = {};
+
+// ═══ 入口弹窗 ═══
+async function openModal() {
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("modalOverlay").style.display = "flex";
+  await loadModes();
+}
+
+async function loadModes() {
+  const container = document.getElementById("modeCards");
+  container.innerHTML = '<p style="text-align:center;color:#999;padding:20px">加载中...</p>';
+  try {
+    const res = await fetch(API + "/modes");
+    const data = await res.json();
+    let html = "";
+    ["today","chapter","weekly"].forEach(key => {
+      const m = data[key] || {};
+      const icons = {today:"📅",chapter:"📑",weekly:"📆"};
+      html += `<button class="mode-card" onclick="selectMode('${key}','${(m.knowledge_points||[]).join(",")}','${m.label}')">
+        <span class="icon">${icons[key]}</span><span class="title">${m.label||key}</span>
+        <div class="desc">${m.desc||""}</div>
+        <div class="meta">${m.card_count||0} 张卡片 · ${m.quiz_count||0} 道题</div>
+      </button>`;
+    });
+    html += `<button class="mode-card custom" onclick="selectCustom()">
+      <span class="icon">🔧</span><span class="title">自定义筛选</span>
+      <div class="desc">按课程 / 章节 / 日期 自由筛选</div>
+    </button>`;
+    container.innerHTML = html;
+  } catch(e) {
+    container.innerHTML = `<p style="text-align:center;color:#e74c3c;padding:20px">连接后端失败<br><small>${e.message}</small></p>`;
+  }
+}
+
+function selectMode(mode, kps, label) {
+  currentMode = {mode, kps, label};
+  knowledgePoints = kps.split(",").filter(Boolean);
+  document.getElementById("modalOverlay").style.display = "none";
+  document.getElementById("mainApp").classList.remove("hidden");
+  document.getElementById("fcTitle").textContent = label;
+  loadFlashcards();
+  loadQuiz();
+}
+
+function selectCustom() {
+  // 简化版自定义：直接弹出 prompt
+  const kps = prompt("输入知识点（逗号分隔），如：向量化,fillna,RFM");
+  if (!kps) return;
+  selectMode("custom", kps, "自定义筛选");
+}
+
+// ═══ 闪卡 ═══
+async function loadFlashcards() {
+  const container = document.getElementById("flashcardContainer");
+  container.innerHTML = '<p class="empty-state">加载中...</p>';
+  try {
+    const res = await fetch(API + "/flashcards?kps=" + encodeURIComponent(knowledgePoints.join(",")));
+    flashcards = await res.json();
+    if (!flashcards.length) {
+      container.innerHTML = '<div class="flashcard-done"><h2>🎉</h2><p>暂无闪卡数据</p><p style="font-size:13px;color:#999">先把压缩笔记导入 flashcard_bank 表</p></div>';
+      document.getElementById("fcActions").classList.add("hidden");
+      return;
+    }
+    fcIndex = 0;
+    document.getElementById("fcBadge").textContent = `0 / ${flashcards.length}`;
+    document.getElementById("fcActions").classList.remove("hidden");
+    renderFlashcard();
+  } catch(e) {
+    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
+  }
+}
+
+function renderFlashcard() {
+  if (fcIndex >= flashcards.length) {
+    document.getElementById("flashcardContainer").innerHTML = `<div class="flashcard-done">
+      <h2>🎉</h2><p>全部复习完成！</p>
+      <button class="btn btn-primary" onclick="switchTab('quiz')">去做测验 →</button>
+    </div>`;
+    document.getElementById("fcActions").classList.add("hidden");
+    document.getElementById("fcBadge").textContent = `${flashcards.length} / ${flashcards.length}`;
+    return;
+  }
+  const card = flashcards[fcIndex];
+  document.getElementById("fcBadge").textContent = `${fcIndex+1} / ${flashcards.length}`;
+  document.getElementById("flashcardContainer").innerHTML = `<div class="flashcard">
+    <div class="fc-title">⭐ ${card.title||""}</div>
+    <div class="fc-content">${card.content||""}</div>
+    <div class="fc-meta"><span>📂 ${card.phase||""} · ${card.chapter||""}</span><span>🏷️ ${(card.tags||[]).join(", ")}</span></div>
+  </div>`;
+}
+
+function reviewCard(action) {
+  if (fcIndex >= flashcards.length) return;
+  const card = flashcards[fcIndex];
+  // 异步调用后端
+  fetch(API + "/review", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({flashcard_id:card.id, knowledge_point:card.title, action})
+  }).catch(()=>{});
+  fcIndex++;
+  renderFlashcard();
+}
+
+document.getElementById("fcActions").innerHTML = `
+  <button class="btn btn-skip" onclick="reviewCard('not_mastered')">👎 没掌握</button>
+  <button class="btn btn-mastered" onclick="reviewCard('mastered')">👍 掌握了</button>
+`;
+
+// ═══ 测验 ═══
+async function loadQuiz() {
+  const container = document.getElementById("quizContainer");
+  container.innerHTML = '<p class="empty-state">加载中...</p>';
+  try {
+    const res = await fetch(API + "/quiz?kps=" + encodeURIComponent(knowledgePoints.join(",")) + "&count=5");
+    quizQuestions = await res.json();
+    if (!quizQuestions.length) {
+      container.innerHTML = '<div class="flashcard-done"><h2>📝</h2><p>暂无题目</p><p style="font-size:13px;color:#999">需要先在 quiz_questions 表里导入题目</p></div>';
+      document.getElementById("btnSubmit").classList.add("hidden");
+      return;
+    }
+    document.getElementById("qzBadge").textContent = `${quizQuestions.length} 题`;
+    document.getElementById("btnSubmit").classList.remove("hidden");
+    quizAnswers = {};
+    renderQuiz();
+  } catch(e) {
+    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
+  }
+}
+
+function renderQuiz() {
+  let html = `<div class="progress-bar"><div class="fill" style="width:${Object.keys(quizAnswers).length/quizQuestions.length*100}%"></div></div>`;
+  quizQuestions.forEach((q, i) => {
+    const opts = typeof q.options === "string" ? JSON.parse(q.options) : q.options;
+    html += `<div class="quiz-q"><div class="q-header">Q${i+1}. ${q.question}</div>`;
+    opts.forEach((o, j) => {
+      const sel = quizAnswers[q.id] === j ? " selected" : "";
+      html += `<label class="opt${sel}" onclick="pickAnswer('${q.id}',${j})"><input type="radio" name="q${i}">${o}</label>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById("quizContainer").innerHTML = html;
+}
+
+function pickAnswer(qid, idx) {
+  quizAnswers[qid] = idx;
+  renderQuiz();
+}
+
+async function submitQuiz() {
+  if (Object.keys(quizAnswers).length < quizQuestions.length) {
+    alert("请先答完所有题目");
+    return;
+  }
+  const answers = quizQuestions.map(q => ({question_id:q.id, user_answer:quizAnswers[q.id]}));
+  const res = await fetch(API + "/quiz/submit", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({mode:currentMode?.mode||"today", answers})
+  });
+  const data = await res.json();
+  document.getElementById("quizContainer").innerHTML = `<div class="flashcard-done">
+    <h2>✅ 已提交</h2><p>${data.total} 道题已保存</p>
+    <p style="font-size:14px;color:#666">去飞书告诉 Claude <b>"批改"</b></p>
+  </div>`;
+  document.getElementById("btnSubmit").classList.add("hidden");
+}
+
+// ═══ 统计 ═══
+async function loadStats() {
+  const container = document.getElementById("statsContent");
+  container.innerHTML = '<p class="empty-state">加载中...</p>';
+  try {
+    const res = await fetch(API + "/stats");
+    const d = await res.json();
+    container.innerHTML = `<div class="stats-grid">
+      <div class="stat-card"><div class="num">${d.total_reviews}</div><div class="lbl">总复习次数</div></div>
+      <div class="stat-card"><div class="num">${d.total_quiz}</div><div class="lbl">总答题数</div></div>
+      <div class="stat-card"><div class="num">${d.avg_correct}%</div><div class="lbl">平均正确率</div></div>
+      <div class="stat-card"><div class="num">${(d.distribution?.low||0)+(d.distribution?.mid||0)}</div><div class="lbl">薄弱知识点</div></div>
+    </div>
+    <div class="weak-list"><h3>📉 最薄弱 Top 3</h3>
+      ${(d.weak_top3||[]).map(w=>`<div class="weak-item"><span>${w.kp}</span><div class="bar"><div class="bar-fill" style="width:${w.score}%;background:${w.score<40?'#e74c3c':w.score<70?'#f39c12':'#27ae60'}"></div></div><span style="font-weight:700">${w.score}%</span></div>`).join("")}
+    </div>
+    <div class="weak-list" style="margin-top:12px"><h3>📋 最近测验</h3>
+      ${(d.recent||[]).map(r=>`<div class="weak-item"><span>${r.mode}</span><span>${r.correct}/${r.total} ${r.correct/r.total>=0.8?'✅':''}</span><span style="color:#999;font-size:12px">${new Date(r.created_at).toLocaleDateString()}</span></div>`).join("")}
+    </div>`;
+  } catch(e) {
+    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
+  }
+}
+
+// ═══ Tab 切换 ═══
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(name+"Section").classList.add("active");
+  if(name==="stats") loadStats();
+  if(name==="quiz") loadQuiz();
+  if(name==="flashcard") renderFlashcard();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
+
+// ═══ 启动 ═══
+openModal();
+</script>
+</body>
+</html>
