@@ -257,6 +257,232 @@ def api_stats():
     }
 
 
+# ─── 积分系统 ──────────────────────────────────
+
+@app.get("/points")
+def api_points():
+    """获取当前积分状态"""
+    sb = get_sb()
+    row = sb.table("user_points").select("*").limit(1).execute()
+    if row.data:
+        return row.data[0]
+    # auto-init
+    sb.table("user_points").insert({"total_points": 0, "current_streak": 0, "max_streak": 0, "multiplier": 1.0}).execute()
+    return {"total_points": 0, "current_streak": 0, "max_streak": 0, "multiplier": 1.0}
+
+
+class AwardPayload(BaseModel):
+    reason: str = "flashcard_mastered"  # flashcard_mastered | quiz_correct | streak_bonus | achievement
+
+
+@app.post("/points/award")
+def api_award(payload: AwardPayload):
+    """答对一题 + 积分, 处理连击倍率"""
+    sb = get_sb()
+    row = sb.table("user_points").select("*").limit(1).execute()
+    if not row.data:
+        sb.table("user_points").insert({"total_points": 0, "current_streak": 0, "max_streak": 0, "multiplier": 1.0}).execute()
+        pts = {"total_points": 0, "current_streak": 0, "max_streak": 0, "multiplier": 1.0}
+    else:
+        pts = row.data[0]
+
+    streak = pts.get("current_streak", 0) + 1
+    multiplier = float(pts.get("multiplier", 1.0))
+
+    # every 10-streak, +0.2 multiplier, cap 3.0
+    if streak > 0 and streak % 10 == 0:
+        multiplier = min(3.0, multiplier + 0.2)
+
+    earned = round(1 * multiplier, 1)
+    total = (pts.get("total_points", 0) or 0) + earned
+    max_streak = max(pts.get("max_streak", 0), streak)
+
+    sb.table("user_points").update({
+        "total_points": total,
+        "current_streak": streak,
+        "max_streak": max_streak,
+        "multiplier": multiplier,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }).eq("id", pts["id"]).execute()
+
+    # log
+    sb.table("point_logs").insert({
+        "points_earned": earned,
+        "multiplier": multiplier,
+        "reason": payload.reason,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }).execute()
+
+    return {
+        "total_points": total,
+        "current_streak": streak,
+        "max_streak": max_streak,
+        "multiplier": multiplier,
+        "earned": earned,
+    }
+
+
+@app.post("/points/reset")
+def api_reset():
+    """答错重置连击"""
+    sb = get_sb()
+    row = sb.table("user_points").select("*").limit(1).execute()
+    if not row.data:
+        return {"msg": "no data"}
+    sb.table("user_points").update({
+        "current_streak": 0,
+        "multiplier": 1.0,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }).eq("id", row.data[0]["id"]).execute()
+    return {
+        "total_points": row.data[0].get("total_points", 0),
+        "current_streak": 0,
+        "multiplier": 1.0,
+    }
+
+
+@app.get("/points/history")
+def api_points_history(limit: int = 20):
+    """积分变动日志"""
+    sb = get_sb()
+    rows = sb.table("point_logs").select("*").order("created_at", desc=True).limit(limit).execute()
+    return rows.data or []
+
+
+# ─── 奖品系统 ──────────────────────────────────
+
+@app.get("/prizes")
+def api_prizes():
+    """奖品库列表"""
+    sb = get_sb()
+    rows = sb.table("prize_library").select("*").order("cost", desc=False).execute()
+    return rows.data or []
+
+
+@app.get("/prizes/mine")
+def api_my_prizes():
+    """我已获得的奖品"""
+    sb = get_sb()
+    rows = sb.table("user_prizes").select("*, prize_library(name, icon, type, description)").execute()
+    return rows.data or []
+
+
+class RedeemPayload(BaseModel):
+    prize_id: str
+
+
+@app.post("/prizes/redeem")
+def api_redeem(payload: RedeemPayload):
+    """兑换奖品"""
+    sb = get_sb()
+
+    # get prize
+    prize = sb.table("prize_library").select("*").eq("id", payload.prize_id).execute()
+    if not prize.data:
+        raise HTTPException(404, "奖品不存在")
+    prize = prize.data[0]
+
+    # check already owned
+    owned = sb.table("user_prizes").select("id").eq("prize_id", payload.prize_id).execute()
+    if owned.data:
+        raise HTTPException(400, "已拥有该奖品")
+
+    # check points for cost
+    if prize["cost"] > 0:
+        pts = sb.table("user_points").select("*").limit(1).execute()
+        if not pts.data or (pts.data[0].get("total_points", 0) or 0) < prize["cost"]:
+            raise HTTPException(400, "积分不足")
+
+        # deduct points
+        sb.table("user_points").update({
+            "total_points": (pts.data[0].get("total_points", 0) or 0) - prize["cost"],
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", pts.data[0]["id"]).execute()
+
+        # log deduction
+        sb.table("point_logs").insert({
+            "points_earned": -prize["cost"],
+            "multiplier": pts.data[0].get("multiplier", 1.0),
+            "reason": "achievement",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+
+    # award prize
+    sb.table("user_prizes").insert({
+        "prize_id": payload.prize_id,
+        "earned_at": datetime.now(timezone.utc).isoformat(),
+    }).execute()
+
+    return {"msg": f"🎉 成功兑换：{prize['name']}！"}
+
+
+# ─── 统计扩展 ──────────────────────────────────
+
+@app.get("/stats/heatmap")
+def api_heatmap():
+    """知识热力图数据：过去30天的知识点×日期矩阵"""
+    sb = get_sb()
+    from datetime import timedelta
+
+    now = datetime.now(timezone.utc)
+    days = 30
+    start = (now - timedelta(days=days)).isoformat()
+
+    attempts = (
+        sb.table("quiz_attempts")
+        .select("*, quiz_questions(knowledge_point)")
+        .gte("created_at", start)
+        .eq("graded", True)
+        .order("created_at", desc=False)
+        .execute()
+    ).data or []
+
+    # Build matrix: {kp: {date: [correct, total]}}
+    matrix = {}
+    kps = []
+    for a in attempts:
+        q = a.get("quiz_questions", {}) or {}
+        kp = q.get("knowledge_point", "")
+        if not kp:
+            continue
+        d = a["created_at"][:10]  # date only
+        if kp not in matrix:
+            matrix[kp] = {}
+            kps.append(kp)
+        if d not in matrix[kp]:
+            matrix[kp][d] = {"correct": 0, "total": 0}
+        matrix[kp][d]["total"] += 1
+        if a.get("is_correct"):
+            matrix[kp][d]["correct"] += 1
+
+    # Generate date list
+    from datetime import timedelta
+    dates = [(now - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days, -1, -1)]
+
+    # Convert to percentage
+    heatmap = {}
+    for kp in matrix:
+        heatmap[kp] = {}
+        for d, v in matrix[kp].items():
+            heatmap[kp][d] = round(v["correct"] / v["total"] * 100) if v["total"] > 0 else 0
+
+    return {"kps": kps, "dates": dates, "matrix": heatmap}
+
+
+@app.get("/stats/history")
+def api_history(limit: int = 30):
+    """答题记录详情"""
+    sb = get_sb()
+    attempts = (
+        sb.table("quiz_attempts")
+        .select("*, quiz_questions(question, knowledge_point, correct_index, explanation)")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    ).data or []
+    return attempts
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
