@@ -483,6 +483,11 @@ def api_history(limit: int = 30):
     return attempts
 
 
+@app.get("/")
+def root():
+    return {"name": "AI Study Assistant", "docs": "/docs", "health": "/health"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
