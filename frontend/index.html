@@ -8,7 +8,7 @@
 :root{--bg:#f8f9fa;--card:#fff;--text:#1a1a2e;--sub:#6b7280;--blue:#4a90d9;--green:#27ae60;--red:#e74c3c;--orange:#f39c12;--radius:14px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden}
-/* ── 入口弹窗 ── */
+/* ── 模态弹窗 ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:100;padding:16px}
 .modal{background:#fff;border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:480px;padding:28px 20px 20px;animation:slideUp .25s}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -19,8 +19,7 @@ body{font-family:"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;bac
 .mode-card .title{font-size:16px;font-weight:700;display:inline;vertical-align:middle}
 .mode-card .desc{font-size:13px;color:var(--sub);margin-top:6px}
 .mode-card .meta{font-size:12px;color:var(--blue);margin-top:4px}
-.mode-card.custom{border-style:dashed}
-/* ── 积分横幅 ── */
+/* ── 积分条 ── */
 .points-bar{display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 16px;background:linear-gradient(135deg,#1a1a2e,#2d3a5c);color:#fff;font-size:14px}
 .points-bar .pt{text-align:center}
 .points-bar .pt .val{font-size:20px;font-weight:800}
@@ -28,104 +27,93 @@ body{font-family:"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;bac
 .points-bar .divider{width:1px;height:28px;background:rgba(255,255,255,.3)}
 .streak-fire{animation:pulse .6s infinite alternate}
 @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
-/* ── 闪卡 ── */
+/* ── Tabs ── */
+.tabs{display:flex;background:#fff;border-bottom:1px solid #eee}
+.tab{flex:1;text-align:center;padding:14px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{border-bottom-color:var(--blue);color:var(--blue)}
+/* ── Header ── */
 header{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10}
 header .back{font-size:20px;cursor:pointer;padding:4px}
 header .title{font-weight:700;font-size:16px}
 header .badge{font-size:12px;background:var(--blue);color:#fff;padding:4px 10px;border-radius:20px}
-.flashcard-container{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 16px;min-height:50vh;touch-action:pan-y}
-.flashcard{background:var(--card);border-radius:var(--radius);padding:28px 24px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.08);min-height:300px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .3s,opacity .3s}
-.flashcard.correct{animation:correctPulse .5s}
-.flashcard.wrong{animation:shake .4s}
-@keyframes correctPulse{0%{box-shadow:0 0 0 0 rgba(39,174,96,.4)}70%{box-shadow:0 0 0 20px rgba(39,174,96,0)}100%{box-shadow:0 0 0 0 rgba(39,174,96,0)}}
+/* ── 闪卡 ── */
+.flashcard-wrap{flex:1;display:flex;flex-direction:column;padding:16px;min-height:55vh}
+.flashcard{background:var(--card);border-radius:var(--radius);padding:24px 20px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,.08);min-height:180px;line-height:1.9;font-size:15px;transition:transform .3s,opacity .3s;white-space:pre-wrap;word-break:break-word;position:relative}
+.flashcard.shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-.flashcard .fc-title{font-size:18px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.flashcard .fc-content{font-size:15px;line-height:1.9;flex:1;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
-.flashcard .fc-content .blank{display:inline-block;min-width:60px;padding:2px 8px;border-bottom:2px dashed var(--blue);color:var(--blue);font-weight:700;cursor:pointer;transition:all .15s;margin:0 2px}
-.flashcard .fc-content .blank.filled{background:#e8f0fe;border-radius:4px;border-bottom-style:solid}
-.flashcard .fc-content .blank.correct-answer{background:#eafaf1;border-color:var(--green);color:var(--green)}
-.flashcard .fc-content .blank.wrong-answer{background:#fdedec;border-color:var(--red);color:var(--red)}
-.flashcard .fc-meta{font-size:12px;color:var(--sub);margin-top:16px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between}
-/* ── 选项区 ── */
-.options-bar{padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.opt-btn{padding:10px 16px;border:1.5px solid #d0d5dd;border-radius:20px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.flashcard .blank{display:inline-block;border-bottom:2.5px solid var(--blue);color:transparent;margin:0 3px;vertical-align:bottom;transition:all .2s;min-width:0}
+.flashcard .blank.filled{color:var(--blue);font-weight:700;border-bottom-color:var(--green);background:#eafaf1;border-radius:2px;padding:0 2px}
+.flashcard .blank.active{background:#e8f0fe;border-radius:4px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.flashcard .fc-meta{font-size:12px;color:var(--sub);margin-top:12px;padding-top:8px;border-top:1px solid #eee;display:flex;justify-content:space-between}
+/* ── 选项池 ── */
+.option-pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;justify-content:center}
+.opt-btn{padding:10px 18px;border:1.5px solid #d0d5dd;border-radius:20px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .opt-btn:active{transform:scale(.95)}
-.opt-btn.selected{border-color:var(--blue);background:#e8f0fe;color:var(--blue)}
-.opt-btn.correct-opt{border-color:var(--green);background:#eafaf1;color:var(--green)}
-.opt-btn.wrong-opt{border-color:var(--red);background:#fdedec;color:var(--red)}
-/* ── 反馈Toast ── */
-.feedback-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:32px 40px;text-align:center;z-index:200;box-shadow:0 8px 40px rgba(0,0,0,.15);transition:transform .25s cubic-bezier(.175,.885,.32,1.275)}
+.opt-btn.removed{opacity:0;transform:scale(.8);pointer-events:none;transition:all .3s}
+/* ── 反馈弹窗 ── */
+.feedback-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:24px 32px;text-align:center;z-index:200;box-shadow:0 8px 40px rgba(0,0,0,.15);transition:transform .25s cubic-bezier(.175,.885,.32,1.275);pointer-events:none}
 .feedback-toast.show{transform:translate(-50%,-50%) scale(1)}
-.feedback-toast .emoji{font-size:56px;display:block;margin-bottom:8px}
-.feedback-toast .msg{font-size:18px;font-weight:700}
+.feedback-toast .emoji{font-size:48px;display:block;margin-bottom:6px}
+.feedback-toast .msg{font-size:20px;font-weight:800}
 .feedback-toast .detail{font-size:13px;color:var(--sub);margin-top:4px}
 .feedback-toast.correct{border:3px solid var(--green)}
-.feedback-toast.wrong{border:3px solid var(--red)}
 /* ── 连击弹出 ── */
-.streak-pop{position:fixed;top:20%;right:16px;font-size:36px;font-weight:900;z-index:150;pointer-events:none;animation:streakUp .8s forwards}
-@keyframes streakUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.5)}}
-/* ── 闪卡完成 ── */
+.streak-pop{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:28px;font-weight:900;z-index:150;pointer-events:none;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.3);animation:streakBoom .8s forwards}
+@keyframes streakBoom{0%{transform:translate(-50%,-50%) scale(0);opacity:0}50%{transform:translate(-50%,-50%) scale(1.3);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+/* ── 完成页 ── */
 .flashcard-done{text-align:center;padding:48px 24px}
 .flashcard-done h2{font-size:28px;margin-bottom:12px}
-.flashcard-done p{color:var(--sub);margin-bottom:24px}
-.empty-state{text-align:center;padding:60px 24px;color:var(--sub)}
-/* ── 测验 ── */
-.quiz-container{padding:20px}
-.quiz-q{margin-bottom:20px}
-.quiz-q .q-header{font-size:15px;font-weight:700;margin-bottom:12px}
-.quiz-q .opt{display:block;padding:14px;margin:8px 0;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;transition:all .15s}
-.quiz-q .opt.selected{border-color:var(--blue);background:#e8f0fe}
-.quiz-q .opt input{display:none}
-.progress-bar{height:4px;background:#e5e7eb;border-radius:2px;margin:16px 0}
-.progress-bar .fill{height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
-/* ── 统计 ── */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
-.stat-card{background:#fff;border-radius:var(--radius);padding:20px;text-align:center}
-.stat-card .num{font-size:32px;font-weight:800}
-.stat-card .lbl{font-size:12px;color:var(--sub);margin-top:4px}
-.weak-list{background:#fff;border-radius:var(--radius);padding:16px;margin:0 16px 12px}
-.weak-list h3{margin-bottom:12px}
-.weak-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0}
-.weak-item .bar{width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;align-self:center}
-.weak-item .bar-fill{height:100%;border-radius:4px}
-/* ── 热力图 ── */
-.heatmap-wrap{background:#fff;border-radius:var(--radius);padding:16px;margin:0 16px 12px;overflow-x:auto}
-.heatmap-wrap h3{margin-bottom:12px}
-.heatmap-table{border-collapse:collapse;font-size:11px}
-.heatmap-table th,.heatmap-table td{padding:3px;text-align:center}
-.heatmap-table th{font-size:10px;color:var(--sub);font-weight:400}
-.heatmap-cell{width:14px;height:14px;border-radius:3px;display:inline-block}
-.heatmap-cell.empty{background:#eee}
-.heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--sub);justify-content:flex-end}
-.heatmap-legend span{width:12px;height:12px;border-radius:2px;display:inline-block}
+.flashcard-done p{color:var(--sub);margin-bottom:16px}
+/* ── 背面展示 ── */
+.card-back{background:var(--card);border-radius:var(--radius);padding:24px 20px;box-shadow:0 4px 20px rgba(0,0,0,.08);line-height:1.9;font-size:15px;white-space:pre-wrap;word-break:break-word}
+.card-back .term{color:var(--green);font-weight:800}
+.review-actions{display:flex;gap:12px;padding:16px 0}
+.review-actions button{flex:1;padding:16px;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer}
+.btn-mastered{background:#eafaf1;color:var(--green);border:2px solid #a3d9b1}
+.btn-skip{background:#fdedec;color:var(--red);border:2px solid #f5b7b1}
 /* ── 奖品 ── */
-.prize-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
-.prize-card{background:#fff;border-radius:var(--radius);padding:20px;text-align:center;border:1.5px solid #e5e7eb;transition:all .15s}
-.prize-card.owned{border-color:var(--green);background:#f8fdf9}
-.prize-card .p-icon{font-size:36px;display:block;margin-bottom:8px}
-.prize-card .p-name{font-size:14px;font-weight:700}
-.prize-card .p-cost{font-size:12px;color:var(--sub);margin-top:4px}
-.prize-card button{margin-top:8px;padding:8px 16px;border-radius:16px;border:none;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:13px}
-.prize-card button:disabled{background:#ccc;cursor:not-allowed}
-.prize-card button:active{transform:scale(.95)}
-/* ── Tabs ── */
-.tabs{display:flex;background:#fff;border-bottom:1px solid #eee}
-.tab{flex:1;text-align:center;padding:14px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
-.tab.active{border-bottom-color:var(--blue);color:var(--blue)}
+.prize-section{padding:16px}
+.prize-banner{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:16px}
+.prize-banner .next-icon{font-size:48px;display:block;margin-bottom:8px}
+.prize-banner .next-msg{font-size:16px;font-weight:700;margin-bottom:4px}
+.prize-banner .next-dist{font-size:13px;opacity:.8}
+.prize-card{background:#fff;border-radius:var(--radius);padding:20px;margin:12px 0;display:flex;align-items:center;gap:16px;border:1.5px solid #e5e7eb}
+.prize-card .p-icon{font-size:40px}
+.prize-card .p-info{flex:1}
+.prize-card .p-name{font-size:16px;font-weight:700}
+.prize-card .p-cost{font-size:13px;color:var(--sub)}
+.prize-card .p-status{font-weight:700;font-size:14px}
+.prize-card .p-status.owned{color:var(--green)}
+.prize-card .p-status.locked{color:var(--sub)}
+/* ── 首次奖品弹窗 ── */
+.first-prize-modal .dist{font-size:48px;font-weight:900;color:var(--blue);display:block}
+.first-prize-modal .goal{font-size:16px;color:var(--sub);margin:8px 0}
 /* ── 通用 ── */
 .hidden{display:none!important}
 .section{display:none}
 .section.active{display:block}
-.btn{flex:1;padding:16px;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-primary{background:var(--blue);color:#fff}
+.empty-state{text-align:center;padding:60px 24px;color:var(--sub)}
+.btn{padding:14px 28px;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--blue);color:#fff;width:100%}
 .btn-primary:active{background:#357abd}
 </style>
 </head>
 <body>
 
+<!-- ═══ 奖品首次弹窗 ═══ -->
+<div class="modal-overlay hidden" id="prizeFirstOverlay">
+<div class="modal first-prize-modal">
+<h2>🎁 积分兑好礼</h2>
+<span class="dist" id="pfDistance">0</span>
+<span class="goal">距离 <b id="pfNextName">一条裤子 👖</b> 还差 <b id="pfNeed">300</b> 积分</span>
+<button class="btn btn-primary" onclick="startEarning()" style="margin-top:16px">💪 开始赚积分！</button>
+</div>
+</div>
+
 <!-- ═══ 入口弹窗 ═══ -->
-<div class="modal-overlay" id="modalOverlay">
-<div class="modal" id="modal">
+<div class="modal-overlay" id="entryOverlay">
+<div class="modal" id="entryModal">
 <h2>🎯 今天学什么？</h2>
 <div id="modeCards"></div>
 </div>
@@ -133,7 +121,6 @@ header .badge{font-size:12px;background:var(--blue);color:#fff;padding:4px 10px;
 
 <!-- ═══ 主界面 ═══ -->
 <div id="mainApp" class="hidden">
-  <!-- 积分横幅 -->
   <div class="points-bar" id="pointsBar">
     <div class="pt"><div class="val" id="ptTotal">0</div><div class="lbl">总积分</div></div>
     <div class="divider"></div>
@@ -142,67 +129,59 @@ header .badge{font-size:12px;background:var(--blue);color:#fff;padding:4px 10px;
     <div class="pt"><div class="val" id="ptMulti">×1.0</div><div class="lbl">倍率</div></div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs" id="tabs">
     <div class="tab active" data-tab="flashcard">📇 闪卡</div>
-    <div class="tab" data-tab="quiz">📝 测验</div>
-    <div class="tab" data-tab="stats">📊 统计</div>
     <div class="tab" data-tab="prizes">🏆 奖品</div>
   </div>
 
   <!-- 闪卡区 -->
   <div class="section active" id="flashcardSection">
-    <header><span class="back" onclick="openModal()">←</span><span class="title" id="fcTitle">闪卡复习</span><span class="badge" id="fcBadge"></span></header>
-    <div class="flashcard-container" id="flashcardContainer"></div>
-    <div class="options-bar" id="optionsBar"></div>
-  </div>
-
-  <!-- 测验区 -->
-  <div class="section" id="quizSection">
-    <header><span class="back" onclick="openModal()">←</span><span class="title">📝 测验</span><span class="badge" id="qzBadge"></span></header>
-    <div class="quiz-container" id="quizContainer"></div>
-    <div style="padding:0 20px 20px"><button class="btn btn-primary" id="btnSubmit" onclick="submitQuiz()">提交答案给 Claude 批改</button></div>
-  </div>
-
-  <!-- 统计区 -->
-  <div class="section" id="statsSection">
-    <header><span class="title">📊 学习统计</span></header>
-    <div id="statsContent"></div>
+    <header><span class="back" onclick="goBack()">←</span><span class="title" id="fcTitle">闪卡复习</span><span class="badge" id="fcBadge"></span></header>
+    <div class="flashcard-wrap" id="flashcardWrap"></div>
   </div>
 
   <!-- 奖品区 -->
   <div class="section" id="prizesSection">
     <header><span class="title">🏆 奖品库</span></header>
-    <div id="prizesContent"></div>
+    <div class="prize-section" id="prizesContent"></div>
   </div>
 </div>
 
 <!-- ═══ 反馈弹窗 ═══ -->
-<div class="feedback-toast" id="feedbackToast"><span class="emoji" id="fbEmoji"></span><span class="msg" id="fbMsg"></span><span class="detail" id="fbDetail"></span></div>
+<div class="feedback-toast correct" id="feedbackToast"><span class="emoji" id="fbEmoji">🎉</span><span class="msg" id="fbMsg"></span><span class="detail" id="fbDetail"></span></div>
 
 <script>
-// ═══ 配置 ═══
-const API = "https://ai-study-assistant-production-c47f.up.railway.app"; // 本地调试用 http://localhost:8000
+const API = "https://ai-study-assistant-production-c47f.up.railway.app";
+
 let currentMode = null;
 let knowledgePoints = [];
 let flashcards = [];
 let fcIndex = 0;
-let quizQuestions = [];
-let quizAnswers = {};
-
-// ─── 积分状态 ───
 let pointsState = { total_points:0, current_streak:0, max_streak:0, multiplier:1.0 };
-let currentBlanks = [];  // [{pos, answer, options, userAnswer:null, correct:null}]
+
+// ─── 当前闪卡状态 ───
+let currentCard = null;         // parsed card {front, back, blanks[]}
+let currentBlanks = [];         // [{pos, answer, userAnswer:null}]
 let activeBlankIdx = 0;
+let optionPool = [];            // [{text, removed:bool}]
+let hasShownFirstPrize = localStorage.getItem("v2_first_prize_shown");
 
-// ═══ 入口弹窗 ═══
-async function openModal() {
-  document.getElementById("mainApp").classList.add("hidden");
-  document.getElementById("modalOverlay").style.display = "flex";
-  await loadModes();
+// ═══ 入口 ═══
+async function init() {
   await loadPoints();
+  // 首次打开 → 奖品弹窗
+  if (!hasShownFirstPrize) {
+    document.getElementById("prizeFirstOverlay").classList.remove("hidden");
+  } else {
+    document.getElementById("entryOverlay").style.display = "flex";
+  }
+  await loadModes();
 }
-
+function startEarning() {
+  localStorage.setItem("v2_first_prize_shown", "1");
+  document.getElementById("prizeFirstOverlay").classList.add("hidden");
+  document.getElementById("entryOverlay").style.display = "flex";
+}
 async function loadModes() {
   const container = document.getElementById("modeCards");
   container.innerHTML = '<p style="text-align:center;color:#999;padding:20px">加载中...</p>';
@@ -213,454 +192,298 @@ async function loadModes() {
     ["today","chapter","weekly"].forEach(key => {
       const m = data[key] || {};
       const icons = {today:"📅",chapter:"📑",weekly:"📆"};
-      html += `<button class="mode-card" onclick="selectMode('${key}','${(m.knowledge_points||[]).join(",")}','${m.label}')">
+      html += `<button class="mode-card" onclick="startReview('${key}','${(m.knowledge_points||[]).join(",")}','${m.label||key}')">
         <span class="icon">${icons[key]}</span><span class="title">${m.label||key}</span>
         <div class="desc">${m.desc||""}</div>
-        <div class="meta">${m.card_count||0} 张卡片 · ${m.quiz_count||0} 道题</div>
+        <div class="meta">${m.card_count||0} 张卡片</div>
       </button>`;
     });
-    html += `<button class="mode-card custom" onclick="selectCustom()">
-      <span class="icon">🔧</span><span class="title">自定义筛选</span>
-      <div class="desc">按课程 / 章节自由筛选</div>
-    </button>`;
     container.innerHTML = html;
   } catch(e) {
     container.innerHTML = `<p style="text-align:center;color:#e74c3c;padding:20px">连接后端失败<br><small>${e.message}</small></p>`;
   }
 }
-
-function selectMode(mode, kps, label) {
+function startReview(mode, kps, label) {
   currentMode = {mode, kps, label};
   knowledgePoints = kps.split(",").filter(Boolean);
-  document.getElementById("modalOverlay").style.display = "none";
+  document.getElementById("entryOverlay").style.display = "none";
   document.getElementById("mainApp").classList.remove("hidden");
   document.getElementById("fcTitle").textContent = label;
+  switchTab("flashcard");
   loadFlashcards();
-  loadQuiz();
   updatePointsBar();
 }
-
-function selectCustom() {
-  const kps = prompt("输入知识点（逗号分隔），如：向量化,fillna,RFM");
-  if (!kps) return;
-  selectMode("custom", kps, "自定义筛选");
+function goBack() {
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("entryOverlay").style.display = "flex";
+  loadModes();
 }
 
-// ═══ 积分 ─═��
+// ═══ 积分 ═══
 async function loadPoints() {
-  try {
-    const res = await fetch(API + "/points");
-    if (res.ok) pointsState = await res.json();
-  } catch(e) { /* ignore */ }
+  try { const r = await fetch(API + "/points"); if (r.ok) pointsState = await r.json(); } catch(e){}
   updatePointsBar();
+  updatePrizeDistance();
 }
-
 function updatePointsBar() {
-  document.getElementById("ptTotal").textContent = pointsState.total_points || 0;
-  document.getElementById("ptStreak").textContent = pointsState.current_streak || 0;
-  document.getElementById("ptMulti").textContent = "×" + (pointsState.multiplier||1).toFixed(1);
-  const streakEl = document.getElementById("ptStreak");
-  if ((pointsState.current_streak||0) >= 5) {
-    streakEl.classList.add("streak-fire");
-  } else {
-    streakEl.classList.remove("streak-fire");
+  document.getElementById("ptTotal").textContent = pointsState.total_points||0;
+  document.getElementById("ptStreak").textContent = pointsState.current_streak||0;
+  document.getElementById("ptMulti").textContent = "×"+(pointsState.multiplier||1).toFixed(1);
+  const el = document.getElementById("ptStreak");
+  el.classList.toggle("streak-fire", (pointsState.current_streak||0) >= 5);
+}
+async function awardPoints() {
+  try {
+    const r = await fetch(API + "/points/award", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason:"flashcard_mastered"})});
+    if (r.ok) { pointsState = await r.json(); updatePointsBar(); updatePrizeDistance(); }
+  } catch(e){}
+  // 连击提示
+  const s = pointsState.current_streak || 0;
+  if (s > 0 && s % 3 === 0) {
+    let word = s >= 10 ? "Amazing! 🔥" : s >= 5 ? "Great! ⚡" : "Nice! 👏";
+    showStreakPop(word + " ×" + (pointsState.multiplier||1).toFixed(1));
   }
 }
-
-async function awardPoints(reason) {
-  try {
-    const res = await fetch(API + "/points/award", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({reason})
-    });
-    if (res.ok) {
-      pointsState = await res.json();
-      updatePointsBar();
-      // 检查连击成就
-      if (pointsState.current_streak >= 5 && pointsState.current_streak % 5 === 0) {
-        showStreakPop(pointsState.current_streak);
-      }
-    }
-  } catch(e) { /* ignore */ }
-}
-
 async function resetPoints() {
   try {
-    const res = await fetch(API + "/points/reset", {method:"POST"});
-    if (res.ok) { pointsState = await res.json(); updatePointsBar(); }
-  } catch(e) { /* ignore */ }
+    const r = await fetch(API + "/points/reset", {method:"POST"});
+    if (r.ok) { pointsState = await r.json(); updatePointsBar(); }
+  } catch(e){}
 }
-
-function showStreakPop(n) {
-  const pop = document.createElement("div");
-  pop.className = "streak-pop";
-  pop.textContent = "🔥 " + n + "连击!";
-  document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 800);
+function showStreakPop(msg) {
+  const p = document.createElement("div"); p.className = "streak-pop"; p.textContent = msg;
+  document.body.appendChild(p); setTimeout(() => p.remove(), 800);
+}
+function showFeedback(msg, detail) {
+  const t = document.getElementById("feedbackToast");
+  document.getElementById("fbMsg").textContent = msg;
+  document.getElementById("fbDetail").textContent = detail||"";
+  t.classList.add("show");
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 700);
+}
+function updatePrizeDistance() {
+  const pts = pointsState.total_points || 0;
+  const el = document.getElementById("pfDistance");
+  if (!el) return;
+  if (pts < 300) {
+    el.textContent = "300分";
+    document.getElementById("pfNextName").textContent = "一条裤子 👖";
+    document.getElementById("pfNeed").textContent = 300 - pts;
+  } else if (pts < 500) {
+    el.textContent = "500分";
+    document.getElementById("pfNextName").textContent = "一场话剧 🎭";
+    document.getElementById("pfNeed").textContent = 500 - pts;
+  } else {
+    el.textContent = "已解锁全部！";
+    document.getElementById("pfNextName").textContent = "";
+    document.getElementById("pfNeed").textContent = "";
+  }
 }
 
 // ═══ 闪卡 ═══
 async function loadFlashcards() {
-  const container = document.getElementById("flashcardContainer");
-  container.innerHTML = '<p class="empty-state">加载中...</p>';
+  const wrap = document.getElementById("flashcardWrap");
+  wrap.innerHTML = '<p class="empty-state">加载中...</p>';
   try {
     const res = await fetch(API + "/flashcards?kps=" + encodeURIComponent(knowledgePoints.join(",")));
     flashcards = await res.json();
-    if (!flashcards.length) {
-      container.innerHTML = '<div class="flashcard-done"><h2>🎉</h2><p>暂无闪卡数据</p><p style="font-size:13px;color:#999">需要先让 Claude Code 把压缩笔记入库</p></div>';
-      document.getElementById("optionsBar").classList.add("hidden");
-      return;
-    }
+    if (!flashcards.length) { wrap.innerHTML = '<div class="flashcard-done"><h2>🎉</h2><p>暂无数据</p></div>'; return; }
     fcIndex = 0;
-    document.getElementById("fcBadge").textContent = `0 / ${flashcards.length}`;
-    document.getElementById("optionsBar").classList.remove("hidden");
-    renderFlashcard();
-  } catch(e) {
-    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
-  }
+    renderCard();
+  } catch(e) { wrap.innerHTML = '<p class="empty-state">加载失败: '+e.message+'</p>'; }
 }
 
-function renderFlashcard() {
+function renderCard() {
   if (fcIndex >= flashcards.length) {
-    document.getElementById("flashcardContainer").innerHTML = `<div class="flashcard-done">
-      <h2>🎉</h2><p>全部复习完成！</p>
-      <button class="btn btn-primary" onclick="switchTab('quiz')">去做测验 →</button>
-    </div>`;
-    document.getElementById("optionsBar").innerHTML = "";
-    document.getElementById("fcBadge").textContent = `${flashcards.length} / ${flashcards.length}`;
+    document.getElementById("flashcardWrap").innerHTML = `<div class="flashcard-done">
+      <h2>🎉</h2><p>全部复习完成！</p><button class="btn btn-primary" onclick="goBack()">返回</button></div>`;
+    document.getElementById("fcBadge").textContent = `${flashcards.length}/${flashcards.length}`;
     return;
   }
+  document.getElementById("fcBadge").textContent = `${fcIndex+1}/${flashcards.length}`;
   const card = flashcards[fcIndex];
-  document.getElementById("fcBadge").textContent = `${fcIndex+1} / ${flashcards.length}`;
-
-  // Parse JSON content
-  let contentData;
-  try {
-    contentData = typeof card.content === "string" ? JSON.parse(card.content) : card.content;
-  } catch(e) {
-    // Legacy format: plain text
-    contentData = { front: card.content, back: card.content, blanks: [] };
-  }
-
-  currentBlanks = (contentData.blanks || []).map((b, i) => ({...b, userAnswer: null, correct: null}));
+  let data;
+  try { data = typeof card.content === "string" ? JSON.parse(card.content) : card.content; }
+  catch(e) { data = { front: card.content, back: card.content, blanks: [] }; }
+  currentCard = data;
+  currentBlanks = (data.blanks||[]).map(b => ({...b, userAnswer: null}));
   activeBlankIdx = 0;
 
-  // Render front with blanks
-  let frontHtml = escapeHtml(contentData.front || card.title);
-  (contentData.blanks || []).forEach((b, i) => {
-    frontHtml = frontHtml.replace(
-      `___(${b.pos})___`,
-      `<span class="blank" id="blank${i}" onclick="selectBlank(${i})">___</span>`
-    );
+  // Build option pool: collect all answers + distractors, shuffle
+  let seen = new Set();
+  optionPool = [];
+  (data.blanks||[]).forEach(b => {
+    (b.options||[]).forEach(o => {
+      if (!seen.has(o)) { seen.add(o); optionPool.push({text: o, removed: false}); }
+    });
   });
+  shuffle(optionPool);
 
-  document.getElementById("flashcardContainer").innerHTML = `<div class="flashcard" id="flashcardEl">
-    <div class="fc-title">⭐ ${escapeHtml(card.title||"")}</div>
-    <div class="fc-content">${frontHtml}</div>
-    <div class="fc-meta"><span>📂 ${escapeHtml(card.phase||"")} · ${escapeHtml(card.chapter||"")}</span><span>🏷️ ${(card.tags||[]).join(", ")}</span></div>
-  </div>`;
-
-  // Show options for first blank
-  showOptionsForBlank(0);
+  renderFront();
+  renderOptions();
 }
 
-function selectBlank(idx) {
-  activeBlankIdx = idx;
-  showOptionsForBlank(idx);
+function renderFront() {
+  let html = escapeHtml(currentCard.front||"");
+  // Replace ___ with styled blanks — use the answer length for underline width
+  currentBlanks.forEach((b, i) => {
+    let cls = "blank";
+    if (b.userAnswer !== null) cls += " filled";
+    if (i === activeBlankIdx && b.userAnswer === null) cls += " active";
+    let display = b.userAnswer !== null ? b.userAnswer : "_".repeat(b.answer.length);
+    html = html.replace("_".repeat(b.answer.length), `<span class="${cls}" onclick="focusBlank(${i})">${display}</span>`);
+  });
+  document.getElementById("flashcardWrap").innerHTML = `
+    <div class="flashcard" id="cardEl">
+      ${html}
+      <div class="fc-meta">
+        <span>📂 ${escapeHtml(cardPhase())}</span>
+        <span id="blankHint">${currentBlanks.filter(b=>b.userAnswer===null).length} 空待填</span>
+      </div>
+    </div>
+    <div class="option-pool" id="optionPool"></div>`;
 }
 
-function showOptionsForBlank(idx) {
-  const bar = document.getElementById("optionsBar");
-  if (idx >= currentBlanks.length) { bar.innerHTML = ""; return; }
-  const blank = currentBlanks[idx];
+function focusBlank(i) {
+  if (currentBlanks[i].userAnswer !== null) return; // already filled
+  activeBlankIdx = i;
+  renderFront();
+  renderOptions();
+}
+
+function renderOptions() {
+  const pool = document.getElementById("optionPool");
+  if (!pool) return;
   let html = "";
-  blank.options.forEach((opt, i) => {
-    let cls = "opt-btn";
-    if (blank.userAnswer !== null && blank.userAnswer === i) cls += blank.correct ? " correct-opt" : " wrong-opt";
-    html += `<button class="${cls}" onclick="pickBlankAnswer(${idx},${i})" ${blank.userAnswer!==null?"disabled":""}>${escapeHtml(opt)}</button>`;
+  optionPool.forEach((o, i) => {
+    if (o.removed) html += `<span class="opt-btn removed">${escapeHtml(o.text)}</span>`;
+    else html += `<button class="opt-btn" onclick="pickOption(${i})">${escapeHtml(o.text)}</button>`;
   });
-  if (blank.userAnswer !== null) {
-    html += `<button class="opt-btn" style="background:#f0f0f0;border-color:#ccc" onclick="nextBlank()">下一空 →</button>`;
-  }
-  bar.innerHTML = html;
+  pool.innerHTML = html;
 }
 
-function pickBlankAnswer(blankIdx, optIdx) {
-  const blank = currentBlanks[blankIdx];
-  if (blank.userAnswer !== null) return; // already answered
-  blank.userAnswer = optIdx;
-  blank.correct = (blank.options[optIdx] === blank.answer);
+function pickOption(idx) {
+  const opt = optionPool[idx];
+  if (opt.removed) return;
 
-  // Update blank display
-  const blankEl = document.getElementById("blank" + blankIdx);
-  if (blankEl) {
-    blankEl.textContent = blank.options[optIdx];
-    blankEl.classList.add("filled");
-    blankEl.classList.add(blank.correct ? "correct-answer" : "wrong-answer");
-  }
+  const blank = currentBlanks[activeBlankIdx];
+  if (!blank || blank.userAnswer !== null) return;
 
-  // Update options display
-  showOptionsForBlank(blankIdx);
+  if (opt.text === blank.answer) {
+    // Correct!
+    blank.userAnswer = opt.text;
+    opt.removed = true;
+    showFeedback("+1", blank.answer);
+    awardPoints();
+    renderFront();
+    renderOptions();
 
-  // Feedback
-  if (blank.correct) {
-    showFeedback(true, "正确！");
-    awardPoints("flashcard_mastered");
-  } else {
-    showFeedback(false, "正确答案：" + blank.answer);
-  }
-
-  // Auto-advance after delay
-  setTimeout(() => {
-    const nextIdx = blankIdx + 1;
-    if (nextIdx < currentBlanks.length) {
-      selectBlank(nextIdx);
+    // Find next unfilled blank
+    const next = currentBlanks.findIndex((b, i) => i > activeBlankIdx && b.userAnswer === null);
+    if (next >= 0) {
+      activeBlankIdx = next;
+      setTimeout(() => { renderFront(); renderOptions(); }, 300);
     } else {
-      // All blanks filled, show back of card briefly
-      showCardBack();
+      // Check if all blanks filled
+      const unfilled = currentBlanks.filter(b => b.userAnswer === null).length;
+      if (unfilled === 0) {
+        setTimeout(showCardBack, 500);
+      } else {
+        // Find first unfilled
+        activeBlankIdx = currentBlanks.findIndex(b => b.userAnswer === null);
+        setTimeout(() => { renderFront(); renderOptions(); }, 300);
+      }
     }
-  }, blank.correct ? 800 : 1500);
-}
-
-function nextBlank() {
-  const nextIdx = activeBlankIdx + 1;
-  if (nextIdx < currentBlanks.length) {
-    selectBlank(nextIdx);
   } else {
-    showCardBack();
+    // Wrong — shake
+    const el = document.getElementById("cardEl");
+    if (el) { el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 400); }
+    resetPoints();
+    showFeedback("再试一次", "正确答案不是 " + opt.text);
   }
 }
 
 function showCardBack() {
-  const card = flashcards[fcIndex];
-  let contentData;
-  try {
-    contentData = typeof card.content === "string" ? JSON.parse(card.content) : card.content;
-  } catch(e) {
-    contentData = { front: card.content, back: card.content, blanks: [] };
-  }
-
-  document.getElementById("flashcardContainer").innerHTML = `<div class="flashcard">
-    <div class="fc-title">📖 ${escapeHtml(card.title||"")}</div>
-    <div class="fc-content">${escapeHtml(contentData.back||card.content)}</div>
-    <div class="fc-meta"><span>📂 ${escapeHtml(card.phase||"")} · ${escapeHtml(card.chapter||"")}</span></div>
-  </div>`;
-
-  document.getElementById("optionsBar").innerHTML = `
-    <button class="opt-btn" style="background:#fdedec;border-color:var(--red);color:var(--red)" onclick="reviewCard('not_mastered')">👎 没掌握</button>
-    <button class="opt-btn" style="background:#eafaf1;border-color:var(--green);color:var(--green)" onclick="reviewCard('mastered')">👍 掌握了</button>
-  `;
+  let backHtml = escapeHtml(currentCard.back||"");
+  // Highlight the terms in green
+  currentBlanks.forEach(b => {
+    backHtml = backHtml.replace("**"+b.answer+"**", `<span class="term">⭐ ${b.answer}</span>`);
+  });
+  document.getElementById("flashcardWrap").innerHTML = `
+    <div class="card-back">${backHtml}</div>
+    <div class="review-actions">
+      <button class="btn-skip" onclick="reviewCard('not_mastered')">👎 没掌握</button>
+      <button class="btn-mastered" onclick="reviewCard('mastered')">👍 掌握了</button>
+    </div>`;
 }
 
 function reviewCard(action) {
   if (fcIndex >= flashcards.length) return;
   const card = flashcards[fcIndex];
   fetch(API + "/review", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
+    method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({flashcard_id:card.id, knowledge_point:card.title, action})
   }).catch(()=>{});
   fcIndex++;
-  renderFlashcard();
+  renderCard();
 }
 
-function showFeedback(isCorrect, msg) {
-  const toast = document.getElementById("feedbackToast");
-  toast.className = "feedback-toast " + (isCorrect ? "correct" : "wrong");
-  document.getElementById("fbEmoji").textContent = isCorrect ? "🎉" : "💡";
-  document.getElementById("fbMsg").textContent = isCorrect ? "正确！" : "答错了";
-  document.getElementById("fbDetail").textContent = msg;
-  toast.classList.add("show");
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => toast.classList.remove("show"), isCorrect ? 600 : 1200);
+function cardPhase() {
+  const card = flashcards[fcIndex];
+  return (card?.phase||"") + " · " + (card?.chapter||"");
 }
 
-// ═══ 测验 ═══
-async function loadQuiz() {
-  const container = document.getElementById("quizContainer");
-  container.innerHTML = '<p class="empty-state">加载中...</p>';
-  try {
-    const res = await fetch(API + "/quiz?kps=" + encodeURIComponent(knowledgePoints.join(",")) + "&count=5");
-    quizQuestions = await res.json();
-    if (!quizQuestions.length) {
-      container.innerHTML = '<div class="flashcard-done"><h2>📝</h2><p>暂无题目</p></div>';
-      document.getElementById("btnSubmit").classList.add("hidden");
-      return;
-    }
-    document.getElementById("qzBadge").textContent = `${quizQuestions.length} 题`;
-    document.getElementById("btnSubmit").classList.remove("hidden");
-    quizAnswers = {};
-    renderQuiz();
-  } catch(e) {
-    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
-  }
-}
-
-function renderQuiz() {
-  let html = `<div class="progress-bar"><div class="fill" style="width:${Object.keys(quizAnswers).length/quizQuestions.length*100}%"></div></div>`;
-  quizQuestions.forEach((q, i) => {
-    const opts = typeof q.options === "string" ? JSON.parse(q.options) : q.options;
-    html += `<div class="quiz-q"><div class="q-header">Q${i+1}. ${q.question}</div>`;
-    opts.forEach((o, j) => {
-      const sel = quizAnswers[q.id] === j ? " selected" : "";
-      html += `<label class="opt${sel}" onclick="pickAnswer('${q.id}',${j})"><input type="radio" name="q${i}">${escapeHtml(o)}</label>`;
-    });
-    html += `</div>`;
-  });
-  document.getElementById("quizContainer").innerHTML = html;
-}
-
-function pickAnswer(qid, idx) {
-  quizAnswers[qid] = idx;
-  renderQuiz();
-}
-
-async function submitQuiz() {
-  if (Object.keys(quizAnswers).length < quizQuestions.length) {
-    alert("请先答完所有题目");
-    return;
-  }
-  const answers = quizQuestions.map(q => ({question_id:q.id, user_answer:quizAnswers[q.id]}));
-  const res = await fetch(API + "/quiz/submit", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({mode:currentMode?.mode||"today", answers})
-  });
-  const data = await res.json();
-  document.getElementById("quizContainer").innerHTML = `<div class="flashcard-done">
-    <h2>✅ 已提交</h2><p>${data.total} 道题已保存</p>
-    <p style="font-size:14px;color:#666">去飞书告诉 Claude <b>"批改"</b></p>
-  </div>`;
-  document.getElementById("btnSubmit").classList.add("hidden");
-}
-
-// ═══ 统计 ═══
-async function loadStats() {
-  const container = document.getElementById("statsContent");
-  container.innerHTML = '<p class="empty-state">加载中...</p>';
-  try {
-    const [statsRes, heatRes] = await Promise.all([
-      fetch(API + "/stats"),
-      fetch(API + "/stats/heatmap").catch(() => ({json:()=>({})}))
-    ]);
-    const d = await statsRes.json();
-    const heat = await heatRes.json();
-
-    let heatmapHtml = "";
-    if (heat.kps && heat.kps.length && heat.dates && heat.dates.length) {
-      heatmapHtml = `<div class="heatmap-wrap"><h3>📊 知识热力图</h3><div style="overflow-x:auto"><table class="heatmap-table"><tr><th></th>`;
-      heat.dates.forEach(d => { heatmapHtml += `<th>${d.slice(5)}</th>`; });
-      heatmapHtml += `</tr>`;
-      heat.kps.forEach(kp => {
-        heatmapHtml += `<tr><td style="text-align:right;font-size:10px;white-space:nowrap;padding-right:4px">${escapeHtml(kp)}</td>`;
-        heat.dates.forEach(d => {
-          const v = (heat.matrix[kp]||{})[d];
-          let color = "#eee", title = "无数据";
-          if (v !== undefined) {
-            if (v >= 80) { color = "#27ae60"; title = v + "%"; }
-            else if (v >= 50) { color = "#f39c12"; title = v + "%"; }
-            else { color = "#e74c3c"; title = v + "%"; }
-          }
-          heatmapHtml += `<td><span class="heatmap-cell" style="background:${color}" title="${title}"></span></td>`;
-        });
-        heatmapHtml += `</tr>`;
-      });
-      heatmapHtml += `</table></div><div class="heatmap-legend"><span style="background:#eee"></span>无 <span style="background:#e74c3c"></span>&lt;50% <span style="background:#f39c12"></span>50-80% <span style="background:#27ae60"></span>&gt;80%</div></div>`;
-    }
-
-    container.innerHTML = `<div class="stats-grid">
-      <div class="stat-card"><div class="num">${d.total_reviews}</div><div class="lbl">总复习次数</div></div>
-      <div class="stat-card"><div class="num">${d.total_quiz}</div><div class="lbl">总答题数</div></div>
-      <div class="stat-card"><div class="num">${d.avg_correct}%</div><div class="lbl">平均正确率</div></div>
-      <div class="stat-card"><div class="num">${(d.distribution?.low||0)+(d.distribution?.mid||0)}</div><div class="lbl">薄弱知识点</div></div>
-    </div>
-    ${heatmapHtml}
-    <div class="weak-list"><h3>📉 最薄弱 Top 3</h3>
-      ${(d.weak_top3||[]).map(w=>`<div class="weak-item"><span>${escapeHtml(w.kp)}</span><div class="bar"><div class="bar-fill" style="width:${w.score}%;background:${w.score<40?'#e74c3c':w.score<70?'#f39c12':'#27ae60'}"></div></div><span style="font-weight:700">${w.score}%</span></div>`).join("")}
-    </div>
-    <div class="weak-list"><h3>📋 最近测验</h3>
-      ${(d.recent||[]).map(r=>`<div class="weak-item"><span>${r.mode}</span><span>${r.correct}/${r.total} ${r.correct/r.total>=0.8?'✅':''}</span><span style="color:#999;font-size:12px">${new Date(r.created_at).toLocaleDateString()}</span></div>`).join("")}
-    </div>`;
-  } catch(e) {
-    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
-  }
-}
-
-// ═══ 奖品 ═══
+// ═══ 奖品 ─═��
 async function loadPrizes() {
-  const container = document.getElementById("prizesContent");
-  container.innerHTML = '<p class="empty-state">加载中...</p>';
+  const c = document.getElementById("prizesContent");
   try {
-    const [libRes, mineRes] = await Promise.all([
-      fetch(API + "/prizes"),
-      fetch(API + "/prizes/mine")
-    ]);
-    const lib = await libRes.json();
-    const mine = await mineRes.json();
-    const ownedIds = new Set((mine||[]).map(p => p.prize_id));
-
-    let html = '<div class="prize-grid">';
+    const [libR, mineR] = await Promise.all([fetch(API+"/prizes"), fetch(API+"/prizes/mine")]);
+    const lib = await libR.json(); const mine = await mineR.json();
+    const ownedIds = new Set((mine||[]).map(p=>p.prize_id));
+    const pts = pointsState.total_points||0;
+    // Next prize distance
+    let nextPrize = null, dist = Infinity;
+    (lib||[]).forEach(p => { if (!ownedIds.has(p.id) && p.cost > pts && p.cost < dist) { dist = p.cost; nextPrize = p; } });
+    let html = "";
+    if (nextPrize) {
+      html += `<div class="prize-banner"><span class="next-icon">${nextPrize.icon||'🎁'}</span>
+        <div class="next-msg">下一个礼物：${nextPrize.name}</div>
+        <div class="next-dist">还差 <b>${nextPrize.cost - pts}</b> 积分（当前 ${pts} / ${nextPrize.cost}）</div></div>`;
+    }
     (lib||[]).forEach(p => {
       const owned = ownedIds.has(p.id);
-      html += `<div class="prize-card${owned?' owned':''}">
+      html += `<div class="prize-card">
         <span class="p-icon">${p.icon||'🏆'}</span>
-        <div class="p-name">${escapeHtml(p.name)}</div>
-        <div class="p-cost">${p.type==='badge'?p.description:(p.cost+' 积分')}</div>
-        ${owned
-          ? '<button disabled>✅ 已获得</button>'
-          : `<button ${(pointsState.total_points||0)>=p.cost?'':'disabled'} onclick="redeemPrize('${p.id}')">${p.cost>0?'兑换':'领取'}</button>`
-        }
+        <div class="p-info"><div class="p-name">${p.name}</div><div class="p-cost">${p.description||(p.cost+' 积分')}</div></div>
+        <span class="p-status${owned?' owned':' locked'}">${owned?'✅ 已获得':'🔒'}</span>
       </div>`;
     });
-    html += '</div>';
-    container.innerHTML = html;
-  } catch(e) {
-    container.innerHTML = `<p class="empty-state">加载失败: ${e.message}</p>`;
-  }
+    c.innerHTML = html;
+  } catch(e) { c.innerHTML = '<p class="empty-state">加载失败</p>'; }
 }
-
-async function redeemPrize(prizeId) {
+async function redeemPrize(id) {
   try {
-    const res = await fetch(API + "/prizes/redeem", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({prize_id: prizeId})
-    });
-    if (res.ok) {
-      const data = await res.json();
-      alert(data.msg || "兑换成功！");
-      await loadPoints();
-      await loadPrizes();
-    } else {
-      const err = await res.json();
-      alert(err.detail || "兑换失败");
-    }
-  } catch(e) {
-    alert("兑换失败: " + e.message);
-  }
+    const r = await fetch(API+"/prizes/redeem", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prize_id:id})});
+    if (r.ok) { await loadPoints(); await loadPrizes(); } else { const e = await r.json(); alert(e.detail||"兑换失败"); }
+  } catch(e) { alert("兑换失败"); }
 }
 
-// ═══ Tab 切换 ═══
+// ═══ Tab ═══
 function switchTab(name) {
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.getElementById(name+"Section").classList.add("active");
-  if(name==="stats") loadStats();
-  if(name==="quiz") loadQuiz();
-  if(name==="flashcard") renderFlashcard();
-  if(name==="prizes") loadPrizes();
+  if (name==="prizes") loadPrizes();
+  if (name==="flashcard") renderFront();
 }
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
 
-// ═══ 工具函数 ═══
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
+// ═══ 工具 ═══
+function escapeHtml(s) { if(!s)return""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
 // ═══ 启动 ═══
-openModal();
+init();
 </script>
 </body>
 </html>

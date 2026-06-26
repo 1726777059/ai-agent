@@ -194,14 +194,10 @@ def _seed_prizes(sb: Client):
         r = sb.table("prize_library").select("id", count="exact").execute()
         if r.count == 0:
             prizes = [
-                {"name":"初出茅庐","type":"badge","description":"完成第一次复习","icon":"🌱","cost":0,"unlock_condition":{"total_reviews":1}},
-                {"name":"连续7天","type":"badge","description":"连续7天打卡学习","icon":"🔥","cost":0,"unlock_condition":{"streak":7}},
-                {"name":"百题斩","type":"badge","description":"累计答对100题","icon":"⚔️","cost":0,"unlock_condition":{"total_correct":100}},
-                {"name":"Python大师","type":"badge","description":"Python知识点全部≥80分","icon":"🐍","cost":0,"unlock_condition":{"phase":"Python","min_score":80}},
-                {"name":"解锁自定义复习","type":"unlock","description":"解锁自定义筛选复习模式","icon":"🔓","cost":500},
-                {"name":"解锁夜间模式","type":"unlock","description":"解锁深色主题","icon":"🌙","cost":200},
-                {"name":"一杯咖啡","type":"physical","description":"你已获得一杯咖啡！(虚拟标记)","icon":"☕","cost":1000},
-                {"name":"一本好书","type":"physical","description":"你已获得一本好书！(虚拟标记)","icon":"📚","cost":3000},
+                {"name":"一条裤子","type":"physical","description":"300 积分兑换","icon":"👖","cost":300},
+                {"name":"一场话剧","type":"physical","description":"500 积分兑换","icon":"🎭","cost":500},
+                {"name":"连续3天","type":"badge","description":"连续3天打卡学习","icon":"🔥","cost":0,"unlock_condition":{"streak":3}},
+                {"name":"连续7天","type":"badge","description":"连续7天打卡学习","icon":"💪","cost":0,"unlock_condition":{"streak":7}},
             ]
             for p in prizes:
                 sb.table("prize_library").insert(p).execute()
