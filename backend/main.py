@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 
 from config import SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY
 from algorithms import get_entry_modes, get_flashcards, get_quiz_questions, compute_mastery_score
+from migrate import run_migrations
 
 app = FastAPI(title="AI Study Assistant")
 
@@ -20,6 +21,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def startup():
+    """Auto-migrate DB schema on every deploy."""
+    try:
+        sb = get_sb_admin()
+        run_migrations(sb)
+    except Exception as e:
+        print(f"Migration skipped (may need SQL Editor one-time setup): {e}")
 
 
 def get_sb() -> Client:

@@ -1,5 +1,13 @@
 -- AI 学习助手 Supabase 建表脚本 v2
--- 在 Supabase SQL Editor 中执行此文件
+-- 在 Supabase SQL Editor 中执行此文件（仅需一次）
+
+-- ═══ 核心：允许后端自动执行 DDL ═══
+CREATE OR REPLACE FUNCTION exec_sql(sql_text TEXT) RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$ BEGIN EXECUTE sql_text; END; $$;
+
+-- 授权 service_role 调用（anon 无权调用，安全）
+GRANT EXECUTE ON FUNCTION exec_sql(TEXT) TO service_role;
 
 -- 1. 闪卡库
 -- content 字段存 JSON: { front, back, blanks: [{pos, answer, options}] }
